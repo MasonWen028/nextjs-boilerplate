@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const licenseDatabase = new Map([
   ['LICENSE-1234567890', {
     client: '留澳之道',
-    validUntil: '2025-12-31',
+    validUntil: '2026-12-31',
     features: ['基础功能', '高级分析', '数据导出'],
     status: 'valid',
   }],
