@@ -10,7 +10,7 @@ const licenseDatabase = new Map([
   }],
   ['LICENSE-DEF-456', {
     client: '公司B',
-    validUntil: '2023-12-31', // 已过期
+    validUntil: '2023-12-31',
     features: ['基础功能'],
     status: 'expired',
   }],
