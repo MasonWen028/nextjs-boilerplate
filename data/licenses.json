@@ -1,0 +1,20 @@
+{
+  "LICENSE-1234567890": {
+    "client": "留澳之道",
+    "validUntil": "2026-12-31",
+    "features": ["基础功能", "高级分析", "数据导出"],
+    "status": "valid"
+  },
+  "LICENSE-DEF-456": {
+    "client": "公司B",
+    "validUntil": "2023-12-31",
+    "features": ["基础功能"],
+    "status": "expired"
+  },
+  "LICENSE-GHI-789": {
+    "client": "公司C",
+    "validUntil": "2026-06-30",
+    "features": ["基础功能", "高级分析"],
+    "status": "valid"
+  }
+}

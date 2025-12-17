@@ -1,0 +1,81 @@
+.cta-section {
+  position: relative;
+  padding: 5rem 0;
+  background-color: #e8f8f9;
+}
+
+.cta-content-wrapper {
+  padding-right: 2rem;
+}
+
+@media (max-width: 1023px) {
+  .cta-content-wrapper {
+    padding-right: 0;
+  }
+}
+
+.section-title h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #2c3e50;
+  margin-bottom: 1.25rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+@media (min-width: 768px) {
+  .section-title h2 {
+    font-size: 3rem;
+  }
+}
+
+.section-title p {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #7f8c8d;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.section-title .text-link {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.section-title .text-link:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+.mb-20 {
+  margin-bottom: 1.25rem;
+}
+
+.mt-30 {
+  margin-top: 1.875rem;
+}
+
+.cta-image {
+  width: 100%;
+  max-width: 600px;
+}
+
+.cta-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0.5rem;
+}
+
+.cta-content-wrapper .main-btn.border-btn {
+  border: 2px solid #1abc9c;
+  background-color: transparent;
+  color: #1abc9c;
+}
+
+.cta-content-wrapper .main-btn.border-btn:hover {
+  background-color: #1abc9c;
+  color: white;
+  border-color: #1abc9c;
+}
+

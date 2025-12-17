@@ -1,0 +1,23 @@
+.navbar-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.navbar-area, .sticky {
+  z-index: 99;
+  transition: all .3s 
+ease-out 0s;
+}
+
+.active {
+  color: #37c2cc;
+}
+
+
+.sticky {
+  position: fixed;
+  background-color: #fff;
+  box-shadow: 0 20px 50px 0 rgba(0, 0, 0, .05);
+}

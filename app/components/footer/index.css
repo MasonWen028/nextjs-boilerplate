@@ -1,0 +1,87 @@
+.footer {
+  background-color: #f8fafc;
+  position: relative;
+}
+
+.pt-120 {
+  padding-top: 7.5rem;
+}
+
+.footer-widget {
+  margin-bottom: 2rem;
+}
+
+.footer-widget .desc {
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.social-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #475569;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  background-color: #1abc9c;
+  color: white;
+  transform: translateY(-3px);
+}
+
+.footer-widget h3 {
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-link {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
+  display: inline-block;
+  padding: 0.25rem 0;
+}
+
+.footer-link:hover {
+  color: #1abc9c;
+  padding-left: 0.5rem;
+}
+
+.newsletter-form input {
+  font-size: 0.95rem;
+}
+
+.newsletter-form .main-btn {
+  background-color: #1abc9c;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.newsletter-form .main-btn:hover {
+  background-color: #16a085;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+}

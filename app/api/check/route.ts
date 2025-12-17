@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@libsql/client';
 
-// 模拟的许可证数据库
-const licenseDatabase = new Map([
-  ['LICENSE-1234567890', {
-    client: '留澳之道',
-    validUntil: '2026-12-31',
-    features: ['基础功能', '高级分析', '数据导出'],
-    status: 'valid',
-  }],
-  ['LICENSE-DEF-456', {
-    client: '公司B',
-    validUntil: '2023-12-31',
-    features: ['基础功能'],
-    status: 'expired',
-  }],
-  ['LICENSE-GHI-789', {
-    client: '公司C',
-    validUntil: '2026-06-30',
-    features: ['基础功能', '高级分析'],
-    status: 'valid',
-  }],
-]);
+// 定义许可证数据类型
+interface LicenseData {
+  client: string;
+  validUntil: string;
+  features: string[];
+  status: 'valid' | 'expired';
+}
 
 // 定义响应类型
 interface LicenseResponse {
@@ -30,6 +17,75 @@ interface LicenseResponse {
   features?: string[];
   message?: string;
 }
+
+// 默认许可证数据库（数据库失败时的后备数据）
+const defaultLicenses: Record<string, LicenseData> = {
+  'LICENSE-1234567890': {
+    client: '留澳之道',
+    validUntil: '2026-12-31',
+    features: ['基础功能', '高级分析', '数据导出'],
+    status: 'valid',
+  },
+  'LICENSE-DEF-456': {
+    client: '公司B',
+    validUntil: '2023-12-31',
+    features: ['基础功能'],
+    status: 'expired',
+  },
+  'LICENSE-GHI-789': {
+    client: '公司C',
+    validUntil: '2026-06-30',
+    features: ['基础功能', '高级分析'],
+    status: 'valid',
+  },
+};
+
+// 创建 Turso 客户端
+const getDbClient = () => {
+  try {
+    return createClient({
+      url: process.env.TURSO_DATABASE_URL || '',
+      authToken: process.env.TURSO_AUTH_TOKEN || '',
+    });
+  } catch (error) {
+    console.error('创建数据库客户端失败:', error);
+    return null;
+  }
+};
+
+// 从 Turso 读取许可证，失败则使用默认数据
+const getLicense = async (licenseKey: string): Promise<LicenseData | null> => {
+  const client = getDbClient();
+  
+  // 如果数据库客户端创建失败，使用默认数据
+  if (!client) {
+    console.warn('数据库不可用，使用默认许可证数据');
+    return defaultLicenses[licenseKey] || null;
+  }
+
+  try {
+    const result = await client.execute({
+      sql: 'SELECT * FROM licenses WHERE license_key = ?',
+      args: [licenseKey],
+    });
+
+    if (result.rows.length === 0) {
+      // 数据库中没有，尝试使用默认数据
+      return defaultLicenses[licenseKey] || null;
+    }
+
+    const row = result.rows[0];
+    return {
+      client: row.client as string,
+      validUntil: row.valid_until as string,
+      features: JSON.parse(row.features as string),
+      status: row.status as 'valid' | 'expired',
+    };
+  } catch (error) {
+    console.error('读取许可证失败，使用默认数据:', error);
+    return defaultLicenses[licenseKey] || null;
+  }
+};
 
 export async function GET(request: NextRequest) {
   // 从URL获取license参数
@@ -47,8 +103,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // 在数据库中查找许可证
-  const licenseData = licenseDatabase.get(license);
+  // 从数据库读取许可证（失败则使用默认数据）
+  const licenseData = await getLicense(license);
 
   // 如果许可证不存在
   if (!licenseData) {
@@ -123,6 +179,118 @@ export async function POST(request: NextRequest) {
     console.error('OpenAI API 错误:', error);
     return NextResponse.json(
       { error: '请求处理失败', details: error instanceof Error ? error.message : '未知错误' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT 端点：添加或更新许可证
+export async function PUT(request: NextRequest) {
+  try {
+    const { adminKey, licenseKey, licenseData } = await request.json();
+
+    // 验证管理员密钥
+    if (adminKey !== process.env.ADMIN_KEY) {
+      return NextResponse.json(
+        { error: '无效的管理员密钥' },
+        { status: 403 }
+      );
+    }
+
+    // 验证必需字段
+    if (!licenseKey || !licenseData) {
+      return NextResponse.json(
+        { error: '缺少必需字段' },
+        { status: 400 }
+      );
+    }
+
+    const client = getDbClient();
+    
+    if (!client) {
+      return NextResponse.json(
+        { error: '数据库不可用' },
+        { status: 503 }
+      );
+    }
+    
+    // 插入或更新许可证
+    await client.execute({
+      sql: `INSERT INTO licenses (license_key, client, valid_until, features, status)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(license_key) DO UPDATE SET
+              client = excluded.client,
+              valid_until = excluded.valid_until,
+              features = excluded.features,
+              status = excluded.status`,
+      args: [
+        licenseKey,
+        licenseData.client,
+        licenseData.validUntil,
+        JSON.stringify(licenseData.features),
+        licenseData.status,
+      ],
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: '许可证已保存',
+      licenseKey,
+    });
+  } catch (error) {
+    console.error('保存许可证错误:', error);
+    return NextResponse.json(
+      { error: '保存失败', details: error instanceof Error ? error.message : '未知错误' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE 端点：删除许可证
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const adminKey = searchParams.get('adminKey');
+    const licenseKey = searchParams.get('licenseKey');
+
+    // 验证管理员密钥
+    if (adminKey !== process.env.ADMIN_KEY) {
+      return NextResponse.json(
+        { error: '无效的管理员密钥' },
+        { status: 403 }
+      );
+    }
+
+    if (!licenseKey) {
+      return NextResponse.json(
+        { error: '缺少 licenseKey 参数' },
+        { status: 400 }
+      );
+    }
+
+    const client = getDbClient();
+    
+    if (!client) {
+      return NextResponse.json(
+        { error: '数据库不可用' },
+        { status: 503 }
+      );
+    }
+    
+    await client.execute({
+      sql: 'DELETE FROM licenses WHERE license_key = ?',
+      args: [licenseKey],
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: '许可证已删除',
+      licenseKey,
+    });
+  } catch (error) {
+    console.error('删除许可证错误:', error);
+    return NextResponse.json(
+      { error: '删除失败' },
       { status: 500 }
     );
   }
